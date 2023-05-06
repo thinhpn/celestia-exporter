@@ -1,0 +1,24 @@
+{
+    "name": "swap-leaderboard-indexing",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "format": "prettier --write .",
+        "dev": "nodemon src/app.js",
+        "app": "node src/app.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "axios": "^0.27.2",
+        "dayjs": "^1.11.7",
+        "dotenv": "^16.0.1",
+        "express": "^4.18.2",
+        "nodemon": "^2.0.22",
+        "prettier": "^2.7.1",
+        "prom-client": "^14.2.0",
+        "winston": "^3.8.2",
+        "winston-daily-rotate-file": "^4.7.1"
+    }
+}
