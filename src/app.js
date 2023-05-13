@@ -276,7 +276,7 @@ async function getDataFromLocalNode() {
                 }
                 if (stderr) {
                     console.log(`Error: ${stderr}`);                    
-                }
+                }                
                 dataStats = JSON.parse(stdout);                
                 localNodeStats.rateInBytePerSecond = dataStats.result.RateIn;
                 localNodeStats.rateOutBytePerSecond = dataStats.result.RateOut;
@@ -305,7 +305,8 @@ async function getDataFromLocalNode() {
                 if (stderr) {
                     console.log(`Error: ${stderr}`);                    
                 }
-                dataStats = JSON.parse(stdout);                
+                dataStats = JSON.parse(stdout);
+                console.log(dataStats);
                 localNodeStats.wallet = dataStats.result;                          
             });        
             //get node wallet balance
@@ -374,24 +375,24 @@ async function updateMetrics() {
                 .labels(node.node_id)
                 .set(node.last_accumulative_node_runtime_counter_in_seconds);
         });
-        let localNodeStats = await getDataFromLocalNode();
-        console.log(`localNodeStats`);
-        console.log(localNodeStats);
-        if(localNodeStats) {
-            localNodeBandwithRateInGauge.set(Math.round(+localNodeStats.rateInBytePerSecond));
-            localNodeBandwithRateOutGauge.set(Math.round(+localNodeStats.rateOutBytePerSecond));
-            localNodeBandwithTotalInGauge.set(+localNodeStats.totalInByte);
-            localNodeBandwithTotalOutGauge.set(+localNodeStats.totalOutByte);
-            localNodeTypeGauge.set(+localNodeStats.type);
-            localNodeApiVersionGauge.set(+localNodeStats.apiVersion);
-            localNodeWalletAddressGauge.set(+localNodeStats.wallet);
-            localNodeWalletBalanceGauge.set(+localNodeStats.balance);
-            localNodeHeadOfSampledChainGauge.set(+localNodeStats.headOfSampledChain);
-            localNodeHeadOfCatchupGauge.set(+localNodeStats.headOfCatchup);
-            localNodeNetworkHeadHeightGauge.set(+localNodeStats.networkHeadHeight);
-            localNodeWorkerConcurrencyGauge.set(+localNodeStats.worker);
-            localNodeCatchUpDoneGauge.set(+localNodeStats.catchUpDone);
-            localNodeIsRunningGauge.set(+localNodeStats.isNodeRunning);
+        let nodeStats = await getDataFromLocalNode();
+        console.log(`nodeStats`);
+        console.log(nodeStats);
+        if(nodeStats) {
+            localNodeBandwithRateInGauge.set(Math.round(+nodeStats.rateInBytePerSecond));
+            localNodeBandwithRateOutGauge.set(Math.round(+nodeStats.rateOutBytePerSecond));
+            localNodeBandwithTotalInGauge.set(+nodeStats.totalInByte);
+            localNodeBandwithTotalOutGauge.set(+nodeStats.totalOutByte);
+            localNodeTypeGauge.set(+nodeStats.type);
+            localNodeApiVersionGauge.set(nodeStats.apiVersion);
+            localNodeWalletAddressGauge.set(nodeStats.wallet);
+            localNodeWalletBalanceGauge.set(+nodeStats.balance);
+            localNodeHeadOfSampledChainGauge.set(+nodeStats.headOfSampledChain);
+            localNodeHeadOfCatchupGauge.set(+nodeStats.headOfCatchup);
+            localNodeNetworkHeadHeightGauge.set(+nodeStats.networkHeadHeight);
+            localNodeWorkerConcurrencyGauge.set(+nodeStats.worker);
+            localNodeCatchUpDoneGauge.set(+nodeStats.catchUpDone);
+            localNodeIsRunningGauge.set(+nodeStats.isNodeRunning);
         }
 
         //update top uptime score
