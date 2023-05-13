@@ -264,7 +264,12 @@ async function getDataFromLocalNode() {
             if (stderr) {
                 console.log(`Error: ${stderr}`);
             }
-            return JSON.parse(stdout);
+            try {
+                return JSON.parse(stdout);
+            } catch (error) {
+                console.log(error);
+                return {}
+            }            
         };
 
         await executeCommand(commandAuth);    
