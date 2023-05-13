@@ -119,22 +119,22 @@ const lastAccumulativeNodeRuntimeCounterInSecondsGauge = new promClient.Gauge({
 //     help: "celestia_node_top_pfb",
 // });
 
-const bandwithRateInGauge = new promClient.Gauge({
+const localNodeBandwithRateInGauge = new promClient.Gauge({
     name: "celestia_node_bandwith_rate_in",
     help: "celestia_node_bandwith_rate_in  in bytes/s",
 });
 
-const bandwithRateOutGauge = new promClient.Gauge({
+const localNodeBandwithRateOutGauge = new promClient.Gauge({
     name: "celestia_node_bandwith_rate_out",
     help: "celestia_node_bandwith_rate_out  in bytes/s",
 });
 
-const bandwithTotalInGauge = new promClient.Gauge({
+const localNodeBandwithTotalInGauge = new promClient.Gauge({
     name: "celestia_node_bandwith_total_in",
     help: "celestia_node_bandwith_total_in  in bytes",
 });
 
-const bandwithTotalOutGauge = new promClient.Gauge({
+const localNodeBandwithTotalOutGauge = new promClient.Gauge({
     name: "celestia_node_bandwith_total_out",
     help: "celestia_node_bandwith_total_out in bytes",
 });
@@ -212,10 +212,10 @@ register.registerMetric(nodeRuntimeCounterInSecondsGauge);
 register.registerMetric(lastAccumulativeNodeRuntimeCounterInSecondsGauge);
 // register.registerMetric(topUptimeGauge);
 // register.registerMetric(topPfbCountGauge);
-register.registerMetric(bandwithRateInGauge);
-register.registerMetric(bandwithRateOutGauge);
-register.registerMetric(bandwithTotalInGauge);
-register.registerMetric(bandwithTotalOutGauge);
+register.registerMetric(localNodeBandwithRateInGauge);
+register.registerMetric(localNodeBandwithRateOutGauge);
+register.registerMetric(localNodeBandwithTotalInGauge);
+register.registerMetric(localNodeBandwithTotalOutGauge);
 register.registerMetric(localNodeTypeGauge);
 register.registerMetric(localNodeApiVersionGauge);
 register.registerMetric(localNodeWalletAddressGauge);
@@ -336,12 +336,13 @@ async function getDataFromLocalNode() {
                 localNodeStats.worker = dataStats.result.concurrency;
                 localNodeStats.catchUpDone = dataStats.result.catch_up_done;
                 localNodeStats.isNodeRunning = dataStats.result.is_running;
-                console.log(localNodeStats);
+                
             });
         });
+        console.log(localNodeStats);
         return localNodeStats;        
     } catch (error) {   
-        console.error(error);
+        console.log(error);
         return {};
     }    
 }
@@ -378,20 +379,20 @@ async function updateMetrics() {
         console.log(`localNodeStats`);
         console.log(localNodeStats);
         if(localNodeStats) {
-            bandwithRateInGauge.set(localNodeStats.rateInBytePerSecond);
-            bandwithRateOutGauge.set(localNodeStats.rateOutBytePerSecond);
-            bandwithTotalInGauge.set(localNodeStats.totalInByte);
-            bandwithTotalOutGauge.set(localNodeStats.totalOutByte);
-            localNodeTypeGauge.set(localNodeStats.type);
-            localNodeApiVersionGauge.set(localNodeStats.apiVersion);
-            localNodeWalletAddressGauge.set(localNodeStats.wallet);
-            localNodeWalletBalanceGauge.set(localNodeStats.balance);
-            localNodeHeadOfSampledChainGauge.set(localNodeStats.headOfSampledChain);
-            localNodeHeadOfCatchupGauge.set(localNodeStats.headOfCatchup);
-            localNodeNetworkHeadHeightGauge.set(localNodeStats.networkHeadHeight);
-            localNodeWorkerConcurrencyGauge.set(localNodeStats.worker);
-            localNodeCatchUpDoneGauge.set(localNodeStats.catchUpDone);
-            localNodeIsRunningGauge.set(localNodeStats.isNodeRunning);
+            localNodeBandwithRateInGauge.set(Math.round(+localNodeStats.rateInBytePerSecond));
+            localNodeBandwithRateOutGauge.set(Math.round(+localNodeStats.rateOutBytePerSecond));
+            localNodeBandwithTotalInGauge.set(+localNodeStats.totalInByte);
+            localNodeBandwithTotalOutGauge.set(+localNodeStats.totalOutByte);
+            localNodeTypeGauge.set(+localNodeStats.type);
+            localNodeApiVersionGauge.set(+localNodeStats.apiVersion);
+            localNodeWalletAddressGauge.set(+localNodeStats.wallet);
+            localNodeWalletBalanceGauge.set(+localNodeStats.balance);
+            localNodeHeadOfSampledChainGauge.set(+localNodeStats.headOfSampledChain);
+            localNodeHeadOfCatchupGauge.set(+localNodeStats.headOfCatchup);
+            localNodeNetworkHeadHeightGauge.set(+localNodeStats.networkHeadHeight);
+            localNodeWorkerConcurrencyGauge.set(+localNodeStats.worker);
+            localNodeCatchUpDoneGauge.set(+localNodeStats.catchUpDone);
+            localNodeIsRunningGauge.set(+localNodeStats.isNodeRunning);
         }
 
         //update top uptime score
