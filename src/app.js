@@ -5,13 +5,7 @@ const dayjs = require("dayjs");
 const { exec } = require("child_process");
 
 const app = express();
-const port = 3456;
-
-const nodeCountGauge = new promClient.Gauge({
-    name: "celestia_node_count",
-    help: "Number of nodes",
-    labelNames: ["node_id"],
-});
+const port = 3457;
 
 const nodeTypeGauge = new promClient.Gauge({
     name: "celestia_node_node_type",
@@ -267,25 +261,25 @@ async function getDataFromLocalNode() {
         let dataStats;
         exec(commandAuth, (error, stdout, stderr) => {
             if (error) {
-                console.error(`Error auth: ${error.message}`);
+                console.log(`Error auth: ${error.message}`);
                 return;
             }
             if (stderr) {
-                console.error(`Error auth: ${stderr}`);
+                console.log(`Error auth: ${stderr}`);
                 return;
             }
+            console.log(stdout);
             //get bandwith stats
             const commandBandwithStats = 'celestia rpc p2p BandwidthStats';
             exec(commandBandwithStats, (error, stdout, stderr) => {
                 if (error) {
-                    console.error(`Error: ${error.message}`);
-                    return;
+                    console.log(`Error: ${error.message}`);                    
                 }
                 if (stderr) {
-                    console.error(`Error: ${stderr}`);
-                    return;
+                    console.log(`Error: ${stderr}`);                    
                 }
                 dataStats = JSON.parse(stdout);
+                console.log(dataStats);
                 localNodeStats.rateInBytePerSecond = dataStats.result.RateIn;
                 localNodeStats.rateOutBytePerSecond = dataStats.result.RateOut;
                 localNodeStats.totalInByte = dataStats.result.TotalIn;
@@ -295,14 +289,13 @@ async function getDataFromLocalNode() {
             const commandNodeInfo = 'celestia rpc node Info';
             exec(commandNodeInfo, (error, stdout, stderr) => {
                 if (error) {
-                    console.error(`Error: ${error.message}`);
-                    return;
+                    console.log(`Error: ${error.message}`);                    
                 }
                 if (stderr) {
-                    console.error(`Error: ${stderr}`);
-                    return;
+                    console.log(`Error: ${stderr}`);                    
                 }
                 dataStats = JSON.parse(stdout);
+                console.log(dataStats);
                 localNodeStats.type = dataStats.result.type;
                 localNodeStats.apiVersion = dataStats.result.api_version;
             });
@@ -310,42 +303,39 @@ async function getDataFromLocalNode() {
             const commandNodeWallet = 'celestia rpc state AccountAddress';
             exec(commandNodeWallet, (error, stdout, stderr) => {
                 if (error) {
-                    console.error(`Error: ${error.message}`);
-                    return;
+                    console.log(`Error: ${error.message}`);                    
                 }
                 if (stderr) {
-                    console.error(`Error: ${stderr}`);
-                    return;
+                    console.log(`Error: ${stderr}`);                    
                 }
                 dataStats = JSON.parse(stdout);
+                console.log(dataStats);
                 localNodeStats.wallet = dataStats.result;                
             });        
             //get node wallet balance
             const commandNodeBalance = 'celestia rpc state Balance';
             exec(commandNodeBalance, (error, stdout, stderr) => {
                 if (error) {
-                    console.error(`Error: ${error.message}`);
-                    return;
+                    console.log(`Error: ${error.message}`);                    
                 }
                 if (stderr) {
-                    console.error(`Error: ${stderr}`);
-                    return;
+                    console.log(`Error: ${stderr}`);                    
                 }
                 dataStats = JSON.parse(stdout);
+                console.log(dataStats);
                 localNodeStats.balance = dataStats.result.amount;                
             });
             //get sampling stats
             const commandSamplingStats = 'celestia rpc das SamplingStats';
             exec(commandSamplingStats, (error, stdout, stderr) => {
                 if (error) {
-                    console.error(`Error: ${error.message}`);
-                    return;
+                    console.log(`Error: ${error.message}`);                    
                 }
                 if (stderr) {
-                    console.error(`Error: ${stderr}`);
-                    return;
+                    console.log(`Error: ${stderr}`);                    
                 }
                 dataStats = JSON.parse(stdout);
+                console.log(dataStats);
                 localNodeStats.headOfSampledChain = dataStats.result.head_of_sampled_chain;
                 localNodeStats.headOfCatchup = dataStats.result.head_of_catchup;
                 localNodeStats.networkHeadHeight = dataStats.result.network_head_height;
