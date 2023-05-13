@@ -278,10 +278,10 @@ async function getDataFromLocalNode() {
                     console.log(`Error: ${stderr}`);                    
                 }                
                 dataStats = JSON.parse(stdout);                
-                localNodeStats.rateInBytePerSecond = dataStats.result.RateIn;
-                localNodeStats.rateOutBytePerSecond = dataStats.result.RateOut;
-                localNodeStats.totalInByte = dataStats.result.TotalIn;
-                localNodeStats.totalOutByte = dataStats.result.TotalOut;                
+                localNodeStats.rateInBytePerSecond = +dataStats.result.RateIn || 0;
+                localNodeStats.rateOutBytePerSecond = +dataStats.result.RateOut || 0;
+                localNodeStats.totalInByte = +dataStats.result.TotalIn || 0;
+                localNodeStats.totalOutByte = +dataStats.result.TotalOut || 0;                
             });
             //get node info
             const commandNodeInfo = 'celestia rpc node Info';
@@ -293,8 +293,8 @@ async function getDataFromLocalNode() {
                     console.log(`Error: ${stderr}`);                    
                 }
                 dataStats = JSON.parse(stdout);                
-                localNodeStats.type = dataStats.result.type;
-                localNodeStats.apiVersion = dataStats.result.api_version;                
+                localNodeStats.type = +dataStats.result.type || 2;
+                localNodeStats.apiVersion = dataStats.result.api_version || "";                
             });
             //get node wallet address
             const commandNodeWallet = 'celestia rpc state AccountAddress';
@@ -319,7 +319,7 @@ async function getDataFromLocalNode() {
                     console.log(`Error: ${stderr}`);                    
                 }
                 dataStats = JSON.parse(stdout);                
-                localNodeStats.balance = dataStats.result.amount;                       
+                localNodeStats.balance = +dataStats.result.amount || 0;                       
             });
             //get sampling stats
             const commandSamplingStats = 'celestia rpc das SamplingStats';
@@ -331,12 +331,12 @@ async function getDataFromLocalNode() {
                     console.log(`Error: ${stderr}`);                    
                 }
                 dataStats = JSON.parse(stdout);                
-                localNodeStats.headOfSampledChain = dataStats.result.head_of_sampled_chain;
-                localNodeStats.headOfCatchup = dataStats.result.head_of_catchup;
-                localNodeStats.networkHeadHeight = dataStats.result.network_head_height;
-                localNodeStats.worker = dataStats.result.concurrency;
-                localNodeStats.catchUpDone = dataStats.result.catch_up_done;
-                localNodeStats.isNodeRunning = dataStats.result.is_running;                
+                localNodeStats.headOfSampledChain = +dataStats.result.head_of_sampled_chain || 0;
+                localNodeStats.headOfCatchup = +dataStats.result.head_of_catchup || 0;
+                localNodeStats.networkHeadHeight = +dataStats.result.network_head_height || 0;
+                localNodeStats.worker = +dataStats.result.concurrency || 0;
+                localNodeStats.catchUpDone = dataStats.result.catch_up_done || false;
+                localNodeStats.isNodeRunning = dataStats.result.is_running || true;                
             });
         });
         console.log(localNodeStats);
