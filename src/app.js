@@ -147,11 +147,13 @@ const localNodeTypeGauge = new promClient.Gauge({
 const localNodeApiVersionGauge = new promClient.Gauge({
     name: "celestia_node_local_node_api_version",
     help: "celestia_node_local_node_api_version",
+    labelNames: ['version'],
 });
 
 const localNodeWalletAddressGauge = new promClient.Gauge({
     name: "celestia_node_local_node_wallet_address",
     help: "celestia_node_local_node_wallet_address",
+    labelNames: ['wallet_address'],
 });
 
 const localNodeWalletBalanceGauge = new promClient.Gauge({
@@ -349,8 +351,8 @@ async function updateMetrics() {
             localNodeBandwithTotalInGauge.set(+nodeStats.totalInByte);
             localNodeBandwithTotalOutGauge.set(+nodeStats.totalOutByte);
             localNodeTypeGauge.set(+nodeStats.type);
-            localNodeApiVersionGauge.set(nodeStats.apiVersion);
-            localNodeWalletAddressGauge.set(nodeStats.wallet);
+            localNodeApiVersionGauge.labels(nodeStats.apiVersion).set(1);
+            localNodeWalletAddressGauge.labels(nodeStats.wallet).set(1);
             localNodeWalletBalanceGauge.set(+nodeStats.balance);
             localNodeHeadOfSampledChainGauge.set(+nodeStats.headOfSampledChain);
             localNodeHeadOfCatchupGauge.set(+nodeStats.headOfCatchup);
