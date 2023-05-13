@@ -277,13 +277,11 @@ async function getDataFromLocalNode() {
                 if (stderr) {
                     console.log(`Error: ${stderr}`);                    
                 }
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);
+                dataStats = JSON.parse(stdout);                
                 localNodeStats.rateInBytePerSecond = dataStats.result.RateIn;
                 localNodeStats.rateOutBytePerSecond = dataStats.result.RateOut;
                 localNodeStats.totalInByte = dataStats.result.TotalIn;
-                localNodeStats.totalOutByte = dataStats.result.TotalOut;
-                console.log(localNodeStats);
+                localNodeStats.totalOutByte = dataStats.result.TotalOut;                
             });
             //get node info
             const commandNodeInfo = 'celestia rpc node Info';
@@ -294,11 +292,9 @@ async function getDataFromLocalNode() {
                 if (stderr) {
                     console.log(`Error: ${stderr}`);                    
                 }
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);
+                dataStats = JSON.parse(stdout);                
                 localNodeStats.type = dataStats.result.type;
-                localNodeStats.apiVersion = dataStats.result.api_version;
-                console.log(localNodeStats);
+                localNodeStats.apiVersion = dataStats.result.api_version;                
             });
             //get node wallet address
             const commandNodeWallet = 'celestia rpc state AccountAddress';
@@ -309,10 +305,8 @@ async function getDataFromLocalNode() {
                 if (stderr) {
                     console.log(`Error: ${stderr}`);                    
                 }
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);
-                localNodeStats.wallet = dataStats.result;
-                console.log(localNodeStats);             
+                dataStats = JSON.parse(stdout);                
+                localNodeStats.wallet = dataStats.result;                          
             });        
             //get node wallet balance
             const commandNodeBalance = 'celestia rpc state Balance';
@@ -323,10 +317,8 @@ async function getDataFromLocalNode() {
                 if (stderr) {
                     console.log(`Error: ${stderr}`);                    
                 }
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);
-                localNodeStats.balance = dataStats.result.amount;
-                console.log(localNodeStats);              
+                dataStats = JSON.parse(stdout);                
+                localNodeStats.balance = dataStats.result.amount;                       
             });
             //get sampling stats
             const commandSamplingStats = 'celestia rpc das SamplingStats';
@@ -337,8 +329,7 @@ async function getDataFromLocalNode() {
                 if (stderr) {
                     console.log(`Error: ${stderr}`);                    
                 }
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);
+                dataStats = JSON.parse(stdout);                
                 localNodeStats.headOfSampledChain = dataStats.result.head_of_sampled_chain;
                 localNodeStats.headOfCatchup = dataStats.result.head_of_catchup;
                 localNodeStats.networkHeadHeight = dataStats.result.network_head_height;
@@ -384,6 +375,8 @@ async function updateMetrics() {
                 .set(node.last_accumulative_node_runtime_counter_in_seconds);
         });
         let localNodeStats = await getDataFromLocalNode();
+        console.log(`localNodeStats`);
+        console.log(localNodeStats);
         if(localNodeStats) {
             bandwithRateInGauge.set(localNodeStats.rateInBytePerSecond);
             bandwithRateOutGauge.set(localNodeStats.rateOutBytePerSecond);
