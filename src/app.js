@@ -255,10 +255,10 @@ async function getDataFromCelestia() {
 }
 
 async function getDataFromLocalNode() {
-    try {
-        const commandAuth = "export CELESTIA_NODE_AUTH_TOKEN=$(celestia light auth admin --p2p.network blockspacerace)";        
-        let localNodeStats = {};
+    try {           
+        let localNodeStats;
         let dataStats;
+        const commandAuth = "export CELESTIA_NODE_AUTH_TOKEN=$(celestia light auth admin --p2p.network blockspacerace)";     
         exec(commandAuth, (error, stdout, stderr) => {
             if (error) {
                 console.log(`Error auth: ${error.message}`);
@@ -335,14 +335,14 @@ async function getDataFromLocalNode() {
                 localNodeStats.networkHeadHeight = dataStats.result.network_head_height;
                 localNodeStats.worker = dataStats.result.concurrency;
                 localNodeStats.catchUpDone = dataStats.result.catch_up_done;
-                localNodeStats.isNodeRunning = dataStats.result.is_running;
-                console.log(localNodeStats);
-                return localNodeStats;
+                localNodeStats.isNodeRunning = dataStats.result.is_running;                
             });
-        });        
+        });
+        console.log(localNodeStats);
+        return localNodeStats;        
     } catch (error) {   
         console.log(error);
-        return {};
+        return;
     }    
 }
 
