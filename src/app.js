@@ -255,101 +255,52 @@ async function getDataFromCelestia() {
 }
 
 async function getDataFromLocalNode() {
-    try {           
-        var localNodeStats = {};
-        var dataStats = {};
-        const commandAuth = "export CELESTIA_NODE_AUTH_TOKEN=$(celestia light auth admin --p2p.network blockspacerace)";     
-        exec(commandAuth, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`Error auth: ${error.message}`);
-                return;
-            }
+    try {
+        const localNodeStats = {};
+        const commandAuth = "export CELESTIA_NODE_AUTH_TOKEN=$(celestia light auth admin --p2p.network blockspacerace)";    
+        
+        const executeCommand = async (command) => {
+            const { stdout, stderr } = await exec(command);
             if (stderr) {
-                console.log(`Error auth: ${stderr}`);
-                return;
-            }            
-            //get bandwith stats
-            const commandBandwithStats = 'celestia rpc p2p BandwidthStats';
-            exec(commandBandwithStats, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`Error: ${error.message}`);                    
-                }
-                if (stderr) {
-                    console.log(`Error: ${stderr}`);                    
-                }                
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);
-                localNodeStats.rateInBytePerSecond = +(dataStats.result.RateIn) || 0;
-                localNodeStats.rateOutBytePerSecond = +(dataStats.result.RateOut) || 0;
-                localNodeStats.totalInByte = +(dataStats.result.TotalIn) || 0;
-                localNodeStats.totalOutByte = +(dataStats.result.TotalOut) || 0;                
-            });
-            //get node info
-            const commandNodeInfo = 'celestia rpc node Info';
-            exec(commandNodeInfo, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`Error: ${error.message}`);                    
-                }
-                if (stderr) {
-                    console.log(`Error: ${stderr}`);                    
-                }
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);              
-                localNodeStats.type = +(dataStats.result.type) || 2;
-                localNodeStats.apiVersion = dataStats.result.api_version || "";                
-            });
-            //get node wallet address
-            const commandNodeWallet = 'celestia rpc state AccountAddress';
-            exec(commandNodeWallet, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`Error: ${error.message}`);                    
-                }
-                if (stderr) {
-                    console.log(`Error: ${stderr}`);                    
-                }
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);
-                localNodeStats.wallet = dataStats.result;                          
-            });        
-            //get node wallet balance
-            const commandNodeBalance = 'celestia rpc state Balance';
-            exec(commandNodeBalance, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`Error: ${error.message}`);                    
-                }
-                if (stderr) {
-                    console.log(`Error: ${stderr}`);                    
-                }
-                dataStats = JSON.parse(stdout);
-                console.log(dataStats);               
-                localNodeStats.balance = +(dataStats.result.amount) || 0;                       
-            });
-            //get sampling stats
-            const commandSamplingStats = 'celestia rpc das SamplingStats';
-            exec(commandSamplingStats, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`Error: ${error.message}`);                    
-                }
-                if (stderr) {
-                    console.log(`Error: ${stderr}`);                    
-                }
-                dataStats = JSON.parse(stdout); 
-                console.log(dataStats);               
-                localNodeStats.headOfSampledChain = +(dataStats.result.head_of_sampled_chain) || 0;
-                localNodeStats.headOfCatchup = +(dataStats.result.head_of_catchup) || 0;
-                localNodeStats.networkHeadHeight = +(dataStats.result.network_head_height) || 0;
-                localNodeStats.worker = +(dataStats.result.concurrency) || 0;
-                localNodeStats.catchUpDone = dataStats.result.catch_up_done || false;
-                localNodeStats.isNodeRunning = dataStats.result.is_running || true;
-            });
-        });
+                console.log(`Error: ${stderr}`);
+            }
+            return JSON.parse(stdout);
+        };
+
+        await executeCommand(commandAuth);    
+       
+        const bandwidthStats = await executeCommand('celestia rpc p2p BandwidthStats');
+        localNodeStats.rateInBytePerSecond = +(bandwidthStats.result.RateIn) || 0;
+        localNodeStats.rateOutBytePerSecond = +(bandwidthStats.result.RateOut) || 0;
+        localNodeStats.totalInByte = +(bandwidthStats.result.TotalIn) || 0;
+        localNodeStats.totalOutByte = +(bandwidthStats.result.TotalOut) || 0;
+    
+        const nodeInfo = await executeCommand('celestia rpc node Info');
+        localNodeStats.type = +(nodeInfo.result.type) || 2;
+        localNodeStats.apiVersion = nodeInfo.result.api_version || "";
+    
+        const nodeWallet = await executeCommand('celestia rpc state AccountAddress');
+        localNodeStats.wallet = nodeWallet.result;
+    
+        const nodeBalance = await executeCommand('celestia rpc state Balance');
+        localNodeStats.balance = +(nodeBalance.result.amount) || 0;
+
+        const samplingStats = await executeCommand('celestia rpc das SamplingStats');
+        localNodeStats.headOfSampledChain = +(samplingStats.result.head_of_sampled_chain) || 0;
+        localNodeStats.headOfCatchup = +(samplingStats.result.head_of_catchup) || 0;
+        localNodeStats.networkHeadHeight = +(samplingStats.result.network_head_height) || 0;
+        localNodeStats.worker = +(samplingStats.result.concurrency) || 0;
+        localNodeStats.catchUpDone = samplingStats.result.catch_up_done || false;
+        localNodeStats.isNodeRunning = samplingStats.result.is_running || true;
+    
         console.log(localNodeStats);
-        return localNodeStats;        
-    } catch (error) {   
+        return localNodeStats;
+    } catch (error) {
         console.log(error);
-        return;
-    }    
-}
+        return null;
+    }
+  }
+
 
 async function updateMetrics() {
     try {        
