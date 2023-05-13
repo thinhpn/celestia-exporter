@@ -2,6 +2,7 @@ const express = require("express");
 const promClient = require("prom-client");
 const axios = require("axios");
 const dayjs = require("dayjs");
+const { exec } = require("child_process");
 
 const app = express();
 const port = 3456;
@@ -124,6 +125,76 @@ const lastAccumulativeNodeRuntimeCounterInSecondsGauge = new promClient.Gauge({
 //     help: "celestia_node_top_pfb",
 // });
 
+const bandwithRateInGauge = new promClient.Gauge({
+    name: "celestia_node_bandwith_rate_in",
+    help: "celestia_node_bandwith_rate_in  in bytes/s",
+});
+
+const bandwithRateOutGauge = new promClient.Gauge({
+    name: "celestia_node_bandwith_rate_out",
+    help: "celestia_node_bandwith_rate_out  in bytes/s",
+});
+
+const bandwithTotalInGauge = new promClient.Gauge({
+    name: "celestia_node_bandwith_total_in",
+    help: "celestia_node_bandwith_total_in  in bytes",
+});
+
+const bandwithTotalOutGauge = new promClient.Gauge({
+    name: "celestia_node_bandwith_total_out",
+    help: "celestia_node_bandwith_total_out in bytes",
+});
+
+const localNodeTypeGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_type",
+    help: "celestia_node_local_node_type",
+});
+
+const localNodeApiVersionGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_api_version",
+    help: "celestia_node_local_node_api_version",
+});
+
+const localNodeWalletAddressGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_wallet_address",
+    help: "celestia_node_local_node_wallet_address",
+});
+
+const localNodeWalletBalanceGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_wallet_balance",
+    help: "celestia_node_local_node_wallet_balance",
+});
+
+const localNodeHeadOfSampledChainGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_head_of_sampled_chain",
+    help: "celestia_node_local_node_head_of_sampled_chain",
+});
+
+const localNodeHeadOfCatchupGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_head_of_catchup",
+    help: "celestia_node_local_node_head_of_catchup",
+});
+
+const localNodeNetworkHeadHeightGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_network_head_height",
+    help: "celestia_node_local_node_network_head_height",
+});
+
+const localNodeWorkerConcurrencyGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_worker_concurrency",
+    help: "celestia_node_local_node_worker_concurrency",
+});
+
+const localNodeCatchUpDoneGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_catch_up_done",
+    help: "celestia_node_local_node_catch_up_done",
+});
+
+const localNodeIsRunningGauge = new promClient.Gauge({
+    name: "celestia_node_local_node_is_running",
+    help: "celestia_node_local_node_is_running",
+});
+
 const register = new promClient.Registry();
 
 register.clear(); //remove all nodejs metrics default
@@ -147,6 +218,20 @@ register.registerMetric(nodeRuntimeCounterInSecondsGauge);
 register.registerMetric(lastAccumulativeNodeRuntimeCounterInSecondsGauge);
 // register.registerMetric(topUptimeGauge);
 // register.registerMetric(topPfbCountGauge);
+register.registerMetric(bandwithRateInGauge);
+register.registerMetric(bandwithRateOutGauge);
+register.registerMetric(bandwithTotalInGauge);
+register.registerMetric(bandwithTotalOutGauge);
+register.registerMetric(localNodeTypeGauge);
+register.registerMetric(localNodeApiVersionGauge);
+register.registerMetric(localNodeWalletAddressGauge);
+register.registerMetric(localNodeWalletBalanceGauge);
+register.registerMetric(localNodeHeadOfSampledChainGauge);
+register.registerMetric(localNodeHeadOfCatchupGauge);
+register.registerMetric(localNodeNetworkHeadHeightGauge);
+register.registerMetric(localNodeWorkerConcurrencyGauge);
+register.registerMetric(localNodeCatchUpDoneGauge);
+register.registerMetric(localNodeIsRunningGauge);
 
 promClient.collectDefaultMetrics({ register });
 
@@ -175,9 +260,111 @@ async function getDataFromCelestia() {
     
 }
 
+async function getDataFromLocalNode() {
+    try {
+        const commandAuth = "export CELESTIA_NODE_AUTH_TOKEN=$(celestia light auth admin --p2p.network blockspacerace)";        
+        let localNodeStats = {};
+        let dataStats;
+        exec(commandAuth, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error auth: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(`Error auth: ${stderr}`);
+                return;
+            }
+            //get bandwith stats
+            const commandBandwithStats = 'celestia rpc p2p BandwidthStats';
+            exec(commandBandwithStats, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`Error: ${stderr}`);
+                    return;
+                }
+                dataStats = JSON.parse(stdout);
+                localNodeStats.rateInBytePerSecond = dataStats.result.RateIn;
+                localNodeStats.rateOutBytePerSecond = dataStats.result.RateOut;
+                localNodeStats.totalInByte = dataStats.result.TotalIn;
+                localNodeStats.totalOutByte = dataStats.result.TotalOut;
+            });
+            //get node info
+            const commandNodeInfo = 'celestia rpc node Info';
+            exec(commandNodeInfo, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`Error: ${stderr}`);
+                    return;
+                }
+                dataStats = JSON.parse(stdout);
+                localNodeStats.type = dataStats.result.type;
+                localNodeStats.apiVersion = dataStats.result.api_version;
+            });
+            //get node wallet address
+            const commandNodeWallet = 'celestia rpc state AccountAddress';
+            exec(commandNodeWallet, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`Error: ${stderr}`);
+                    return;
+                }
+                dataStats = JSON.parse(stdout);
+                localNodeStats.wallet = dataStats.result;                
+            });        
+            //get node wallet balance
+            const commandNodeBalance = 'celestia rpc state Balance';
+            exec(commandNodeBalance, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`Error: ${stderr}`);
+                    return;
+                }
+                dataStats = JSON.parse(stdout);
+                localNodeStats.balance = dataStats.result.amount;                
+            });
+            //get sampling stats
+            const commandSamplingStats = 'celestia rpc das SamplingStats';
+            exec(commandSamplingStats, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`Error: ${stderr}`);
+                    return;
+                }
+                dataStats = JSON.parse(stdout);
+                localNodeStats.headOfSampledChain = dataStats.result.head_of_sampled_chain;
+                localNodeStats.headOfCatchup = dataStats.result.head_of_catchup;
+                localNodeStats.networkHeadHeight = dataStats.result.network_head_height;
+                localNodeStats.worker = dataStats.result.concurrency;
+                localNodeStats.catchUpDone = dataStats.result.catch_up_done;
+                localNodeStats.isNodeRunning = dataStats.result.is_running;
+            });
+        });
+        return localNodeStats;        
+    } catch (error) {   
+        console.error(error);
+        return {};
+    }    
+}
+
 async function updateMetrics() {
     try {        
         let nodes = await getDataFromCelestia();
+        let localNodeStats = await getDataFromLocalNode();
         nodes.forEach((node) => {
             nodeTypeGauge.labels(node.node_id).set(node.node_type);
             latestMetricsTimeGauge.labels(node.node_id).set(+dayjs(node.latest_metrics_time));
@@ -203,6 +390,22 @@ async function updateMetrics() {
                 .labels(node.node_id)
                 .set(node.last_accumulative_node_runtime_counter_in_seconds);
         });
+        if(localNodeStats?.rateInBytePerSecond) {
+            bandwithRateInGauge.set(localNodeStats.rateInBytePerSecond);
+            bandwithRateOutGauge.set(localNodeStats.rateOutBytePerSecond);
+            bandwithTotalInGauge.set(localNodeStats.totalInByte);
+            bandwithTotalOutGauge.set(localNodeStats.totalOutByte);
+            localNodeTypeGauge.set(localNodeStats.type);
+            localNodeApiVersionGauge.set(localNodeStats.apiVersion);
+            localNodeWalletAddressGauge.set(localNodeStats.wallet);
+            localNodeWalletBalanceGauge.set(localNodeStats.balance);
+            localNodeHeadOfSampledChainGauge.set(localNodeStats.headOfSampledChain);
+            localNodeHeadOfCatchupGauge.set(localNodeStats.headOfCatchup);
+            localNodeNetworkHeadHeightGauge.set(localNodeStats.networkHeadHeight);
+            localNodeWorkerConcurrencyGauge.set(localNodeStats.worker);
+            localNodeCatchUpDoneGauge.set(localNodeStats.catchUpDone);
+            localNodeIsRunningGauge.set(localNodeStats.isNodeRunning);
+        }
 
         //update top uptime score
         // const topUptime = nodes
