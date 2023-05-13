@@ -256,8 +256,8 @@ async function getDataFromCelestia() {
 
 async function getDataFromLocalNode() {
     try {           
-        let localNodeStats;
-        let dataStats;
+        var localNodeStats;
+        var dataStats;
         const commandAuth = "export CELESTIA_NODE_AUTH_TOKEN=$(celestia light auth admin --p2p.network blockspacerace)";     
         exec(commandAuth, (error, stdout, stderr) => {
             if (error) {
