@@ -262,20 +262,20 @@ async function getDataFromLocalNode() {
         const executeCommand = async (command) => {            
             return new Promise((resolve, reject) => {
                 exec(command, (error, stdout, stderr) => {
-                  if (error) {
-                    reject(error);
-                    return;
-                  }
-                  if (stderr) {
-                    reject(new Error(stderr));
-                    return;
-                  }
-                  try {
-                    const result = JSON.parse(stdout);
-                    resolve(result);
-                  } catch (parseError) {
-                    reject(parseError);
-                  }
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+                    if (stderr) {
+                        reject(new Error(stderr));
+                        return;
+                    }
+                    try {
+                        const result = JSON.parse(stdout);
+                        resolve(result);
+                    } catch (parseError) {
+                        reject(parseError);
+                    }
                 });
               });
         };
