@@ -5,7 +5,7 @@ const dayjs = require("dayjs");
 const { exec } = require("child_process");
 
 const app = express();
-const port = 3457;
+const port = 3456;
 
 const nodeTypeGauge = new promClient.Gauge({
     name: "celestia_node_node_type",
@@ -109,15 +109,15 @@ const lastAccumulativeNodeRuntimeCounterInSecondsGauge = new promClient.Gauge({
     labelNames: ["node_id"],
 });
 
-// const topUptimeGauge = new promClient.Gauge({
-//     name: "celestia_node_top_uptime",
-//     help: "celestia_node_top_uptime",
-// });
+const topUptimeGauge = new promClient.Gauge({
+    name: "celestia_node_top_uptime",
+    help: "celestia_node_top_uptime",
+});
 
-// const topPfbCountGauge = new promClient.Gauge({
-//     name: "celestia_node_top_pfb",
-//     help: "celestia_node_top_pfb",
-// });
+const topPfbCountGauge = new promClient.Gauge({
+    name: "celestia_node_top_pfb",
+    help: "celestia_node_top_pfb",
+});
 
 const localNodeBandwithRateInGauge = new promClient.Gauge({
     name: "celestia_node_bandwith_rate_in",
@@ -303,9 +303,8 @@ async function getDataFromLocalNode() {
         localNodeStats.networkHeadHeight = +(samplingStats.result.network_head_height) || 0;
         localNodeStats.worker = +(samplingStats.result.concurrency) || 0;
         localNodeStats.catchUpDone = samplingStats.result.catch_up_done || false;
-        localNodeStats.isNodeRunning = samplingStats.result.is_running || true;
-    
-        console.log(localNodeStats);
+        localNodeStats.isNodeRunning = samplingStats.result.is_running || true;   
+        
         return localNodeStats;
     } catch (error) {
         console.log(error);
@@ -342,8 +341,7 @@ async function updateMetrics() {
                 .labels(node.node_id)
                 .set(node.last_accumulative_node_runtime_counter_in_seconds);
         });
-        let nodeStats = await getDataFromLocalNode();
-        console.log(`nodeStats`);
+        let nodeStats = await getDataFromLocalNode();        
         console.log(nodeStats);
         if(nodeStats) {
             localNodeBandwithRateInGauge.set(Math.round(+nodeStats.rateInBytePerSecond));
