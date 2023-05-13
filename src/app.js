@@ -336,11 +336,10 @@ async function getDataFromLocalNode() {
                 localNodeStats.worker = dataStats.result.concurrency;
                 localNodeStats.catchUpDone = dataStats.result.catch_up_done;
                 localNodeStats.isNodeRunning = dataStats.result.is_running;
-                
+                console.log(localNodeStats);
+                return localNodeStats;
             });
-        });
-        console.log(localNodeStats);
-        return localNodeStats;        
+        });        
     } catch (error) {   
         console.log(error);
         return {};
