@@ -260,11 +260,7 @@ async function getDataFromCelestia() {
 }
 
 async function getDataFromLocalNode() {
-    try {
-        const localNodeStats = {};
-        const commandAuth =
-            "export CELESTIA_NODE_AUTH_TOKEN=$(celestia light auth admin --p2p.network blockspacerace)";
-
+    try {        
         const executeCommand = async (command) => {
             return new Promise((resolve, reject) => {
                 exec(command, (error, stdout, stderr) => {
@@ -285,8 +281,10 @@ async function getDataFromLocalNode() {
                 });
             });
         };
-
+        const localNodeStats = {};
         // Execute commands sequentially
+        const commandAuth =
+            "export CELESTIA_NODE_AUTH_TOKEN=$(celestia light auth admin --p2p.network blockspacerace)";
         await executeCommand(commandAuth);
         const bandwidthStats = await executeCommand("celestia rpc p2p BandwidthStats");
         const nodeInfo = await executeCommand("celestia rpc node Info");
