@@ -1,1 +1,1 @@
-# CELESTIA-BLOCKSPACE-RARE-API
+This is a JavaScript project that collects all metrics from the Celestia Node API and some other sources. The collected metrics can be used for monitoring purposes through Prometheus/Grafana systems by DevOps engineers.
